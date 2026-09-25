@@ -1,0 +1,205 @@
+/* ============================================================
+ *  Safe generic STM32 linker script (FLASH + RAM)
+ *  Compatible with STM32CubeMX / CMSIS startup code
+ * ============================================================ */
+
+ENTRY(Reset_Handler)
+
+/* ============================================================
+ *  Memory layout (filled by CMake)
+ * ============================================================ */
+MEMORY
+{
+  FLASH (rx)  : ORIGIN = @FLASH_ORIGIN@, LENGTH = @FLASH_LENGTH@
+  RAM   (rw)  : ORIGIN = @RAM_ORIGIN@,   LENGTH = @RAM_LENGTH@
+}
+
+/* ============================================================
+ *  ELF program headers
+ *  Explicit PHDRS prevents GNU ld from merging the code LOAD
+ *  segment (R+X) with the .data init LOAD segment (R+W) into
+ *  a single RWX segment — eliminates the binutils 2.39+ warning.
+ * ============================================================ */
+PHDRS
+{
+  flash PT_LOAD FLAGS(5);  /* PF_R(4) + PF_X(1) : code in FLASH      */
+  data  PT_LOAD FLAGS(6);  /* PF_R(4) + PF_W(2) : .data LMA in FLASH */
+  ram   PT_NULL ;          /* .bss / heap / stack — not loaded        */
+}
+
+/* ============================================================
+ *  Stack & heap configuration
+ * ============================================================ */
+_Min_Heap_Size  = @HEAP_SIZE@;
+_Min_Stack_Size = @STACK_SIZE@;
+
+/* End of RAM, used by startup */
+_estack = ORIGIN(RAM) + LENGTH(RAM);
+
+/* ============================================================
+ *  Sections
+ * ============================================================ */
+SECTIONS
+{
+  /* ----------------------------------------------------------
+   *  Interrupt vector table
+   * ---------------------------------------------------------- */
+  .isr_vector :
+  {
+    . = ALIGN(4);
+    KEEP(*(.isr_vector))
+    . = ALIGN(4);
+  } > FLASH :flash
+
+  /* ----------------------------------------------------------
+   *  Program code
+   * ---------------------------------------------------------- */
+  .text :
+  {
+    . = ALIGN(4);
+
+    *(.text)
+    *(.text*)
+    *(.glue_7)
+    *(.glue_7t)
+    *(.eh_frame)
+
+    KEEP(*(.init))
+    KEEP(*(.fini))
+
+    . = ALIGN(4);
+  } > FLASH :flash
+
+  /* ----------------------------------------------------------
+   *  Read-only data
+   * ---------------------------------------------------------- */
+  .rodata :
+  {
+    . = ALIGN(4);
+    *(.rodata)
+    *(.rodata*)
+    . = ALIGN(4);
+  } > FLASH :flash
+
+  /* ----------------------------------------------------------
+   *  ARM exception tables (C++)
+   * ---------------------------------------------------------- */
+  .ARM.extab :
+  {
+    . = ALIGN(4);
+    *(.ARM.extab* .gnu.linkonce.armextab.*)
+    . = ALIGN(4);
+  } > FLASH :flash
+
+  .ARM.exidx :
+  {
+    . = ALIGN(4);
+    __exidx_start = .;
+    *(.ARM.exidx*)
+    __exidx_end = .;
+    . = ALIGN(4);
+  } > FLASH :flash
+
+  /* ----------------------------------------------------------
+   *  C++ constructors / destructors
+   * ---------------------------------------------------------- */
+  .preinit_array :
+  {
+    . = ALIGN(4);
+    PROVIDE_HIDDEN(__preinit_array_start = .);
+    KEEP(*(.preinit_array*))
+    PROVIDE_HIDDEN(__preinit_array_end = .);
+    . = ALIGN(4);
+  } > FLASH :flash
+
+  .init_array :
+  {
+    . = ALIGN(4);
+    PROVIDE_HIDDEN(__init_array_start = .);
+    KEEP(*(SORT(.init_array.*)))
+    KEEP(*(.init_array*))
+    PROVIDE_HIDDEN(__init_array_end = .);
+    . = ALIGN(4);
+  } > FLASH :flash
+
+  .fini_array :
+  {
+    . = ALIGN(4);
+    PROVIDE_HIDDEN(__fini_array_start = .);
+    KEEP(*(SORT(.fini_array.*)))
+    KEEP(*(.fini_array*))
+    PROVIDE_HIDDEN(__fini_array_end = .);
+    . = ALIGN(4);
+  } > FLASH :flash
+
+  /* End of text/rodata/ctors area */
+  . = ALIGN(4);
+  _etext = .;
+
+  /* ----------------------------------------------------------
+   *  Initialized data (copied from FLASH to RAM)
+   * ---------------------------------------------------------- */
+  .data :
+  {
+    . = ALIGN(4);
+    _sdata = .;
+    __data_start__ = _sdata;
+
+    *(.data)
+    *(.data*)
+    *(.RamFunc)
+    *(.RamFunc*)
+
+    . = ALIGN(4);
+    _edata = .;
+    __data_end__ = _edata;
+  } > RAM AT > FLASH :data
+
+  /* Source address for data init (used by startup) */
+  _sidata = LOADADDR(.data);
+
+  /* ----------------------------------------------------------
+   *  Uninitialized data
+   * ---------------------------------------------------------- */
+  .bss :
+  {
+    . = ALIGN(4);
+    _sbss = .;
+    __bss_start__ = _sbss;
+
+    *(.bss)
+    *(.bss*)
+    *(COMMON)
+
+    . = ALIGN(4);
+    _ebss = .;
+    __bss_end__ = _ebss;
+  } > RAM :ram
+
+  /* ----------------------------------------------------------
+   *  Heap and stack
+   * ---------------------------------------------------------- */
+  ._user_heap_stack :
+  {
+    . = ALIGN(8);
+    PROVIDE(end = .);
+    PROVIDE(_end = .);
+
+    . = . + _Min_Heap_Size;
+    . = . + _Min_Stack_Size;
+
+    . = ALIGN(8);
+  } > RAM :ram
+
+  /* ----------------------------------------------------------
+   *  Discard unused standard libraries
+   * ---------------------------------------------------------- */
+  /DISCARD/ :
+  {
+    libc.a ( * )
+    libm.a ( * )
+    libgcc.a ( * )
+  }
+
+  .ARM.attributes 0 : { *(.ARM.attributes) }
+}
