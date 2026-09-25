@@ -21,42 +21,42 @@ set(STM32F7_MAP
   STM32F730Z8  stm32f730xx     64K   256K   64K
   STM32F730I8  stm32f730xx     64K   256K   64K
 
-  STM32F750N8  stm32f750xx     64K   256K   64K
-  STM32F750V8  stm32f750xx     64K   256K   64K
-  STM32F750Z8  stm32f750xx     64K   256K   64K
+  STM32F750N8  stm32f750xx     64K   320K   64K
+  STM32F750V8  stm32f750xx     64K   320K   64K
+  STM32F750Z8  stm32f750xx     64K   320K   64K
 
   # ----------------------------------------------------------
   # STM32F722 / STM32F723 (Foundation lines)
   # RAM: 320K (incl. 64K DTCM)
   # ----------------------------------------------------------
-  STM32F722RC  stm32f722xx    256K   320K   64K
-  STM32F722RE  stm32f722xx    512K   320K   64K
-  STM32F722VC  stm32f722xx    256K   320K   64K
-  STM32F722VE  stm32f722xx    512K   320K   64K
-  STM32F722ZC  stm32f722xx    256K   320K   64K
-  STM32F722ZE  stm32f722xx    512K   320K   64K
-  STM32F722IC  stm32f722xx    256K   320K   64K
-  STM32F722IE  stm32f722xx    512K   320K   64K
+  STM32F722RC  stm32f722xx    256K   256K   64K
+  STM32F722RE  stm32f722xx    512K   256K   64K
+  STM32F722VC  stm32f722xx    256K   256K   64K
+  STM32F722VE  stm32f722xx    512K   256K   64K
+  STM32F722ZC  stm32f722xx    256K   256K   64K
+  STM32F722ZE  stm32f722xx    512K   256K   64K
+  STM32F722IC  stm32f722xx    256K   256K   64K
+  STM32F722IE  stm32f722xx    512K   256K   64K
 
-  STM32F723VC  stm32f723xx    256K   320K   64K
-  STM32F723VE  stm32f723xx    512K   320K   64K
-  STM32F723ZC  stm32f723xx    256K   320K   64K
-  STM32F723ZE  stm32f723xx    512K   320K   64K
-  STM32F723IC  stm32f723xx    256K   320K   64K
-  STM32F723IE  stm32f723xx    512K   320K   64K
+  STM32F723VC  stm32f723xx    256K   256K   64K
+  STM32F723VE  stm32f723xx    512K   256K   64K
+  STM32F723ZC  stm32f723xx    256K   256K   64K
+  STM32F723ZE  stm32f723xx    512K   256K   64K
+  STM32F723IC  stm32f723xx    256K   256K   64K
+  STM32F723IE  stm32f723xx    512K   256K   64K
 
   # ----------------------------------------------------------
   # STM32F732 / STM32F733
   # RAM: 320K (incl. 64K DTCM)
   # ----------------------------------------------------------
-  STM32F732RE  stm32f732xx    512K   320K   64K
-  STM32F732VE  stm32f732xx    512K   320K   64K
-  STM32F732ZE  stm32f732xx    512K   320K   64K
-  STM32F732IE  stm32f732xx    512K   320K   64K
+  STM32F732RE  stm32f732xx    512K   256K   64K
+  STM32F732VE  stm32f732xx    512K   256K   64K
+  STM32F732ZE  stm32f732xx    512K   256K   64K
+  STM32F732IE  stm32f732xx    512K   256K   64K
 
-  STM32F733VE  stm32f733xx    512K   320K   64K
-  STM32F733ZE  stm32f733xx    512K   320K   64K
-  STM32F733IE  stm32f733xx    512K   320K   64K
+  STM32F733VE  stm32f733xx    512K   256K   64K
+  STM32F733ZE  stm32f733xx    512K   256K   64K
+  STM32F733IE  stm32f733xx    512K   256K   64K
 
   # ----------------------------------------------------------
   # STM32F745 / STM32F746 / STM32F756
@@ -138,7 +138,6 @@ set(STM32F7_MAP
   STM32F779BI  stm32f779xx   2048K   512K  128K
   STM32F779NI  stm32f779xx   2048K   512K  128K
 )
-
 # ============================================================
 # LEGACY: will be removed in future releases
 # STM32F7 flash sector count lookup

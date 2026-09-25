@@ -6,7 +6,8 @@ project-configure time.
 
 For every cmake/STM32<F>-map.cmake it:
 
-  1. deletes STM32<F>_SECTOR_MAP (the FLASH_KB -> COUNT lookup) and its banner.
+  1. keeps the legacy STM32<F>_SECTOR_MAP (FLASH_KB -> COUNT lookup) for backward
+     compatibility; --drop-legacy deletes it together with its banner.
 
   2. appends, between markers at the end of the file, one full sector list per
      flash density found in STM32<F>_MAP - <address> <size_bytes> pairs, one
@@ -161,12 +162,13 @@ def build_generated(family: str, densities: list[int]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def rewrite(mapfile: Path, family: str) -> str | None:
+def rewrite(mapfile: Path, family: str, drop_legacy: bool = False) -> str | None:
     text = mapfile.read_text()
     densities = map_densities(text, family)
     if not densities:
         return None
-    text = drop_sector_map(text, family)
+    if drop_legacy:
+        text = drop_sector_map(text, family)
     gen = build_generated(family, densities)
     if BEGIN in text and END in text:
         text = re.sub(re.escape(BEGIN) + r".*?" + re.escape(END) + r"\n?",
@@ -202,6 +204,8 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--verify", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--drop-legacy", action="store_true",
+                    help="удалить устаревшие STM32<F>_SECTOR_MAP (по умолчанию остаются)")
     ap.add_argument("--cmake-dir", type=Path)
     args = ap.parse_args()
 
@@ -220,7 +224,7 @@ def main() -> int:
         if not mapfile.is_file():
             print(f"  skip STM32{fam}: no map file")
             continue
-        new = rewrite(mapfile, fam)
+        new = rewrite(mapfile, fam, args.drop_legacy)
         if new is None:
             print(f"  skip STM32{fam}: no STM32{fam}_MAP rows")
             continue

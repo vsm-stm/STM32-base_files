@@ -36,9 +36,9 @@ set(STM32F3_MAP
   STM32F302K8  stm32f302x8    64K   16K  -
 
   # xB/xC (128..256K Flash, up to 40K SRAM on data bus)
-  STM32F302CB  stm32f302xc   128K   40K  -
-  STM32F302RB  stm32f302xc   128K   40K  -
-  STM32F302VB  stm32f302xc   128K   40K  -
+  STM32F302CB  stm32f302xc   128K   32K  -
+  STM32F302RB  stm32f302xc   128K   32K  -
+  STM32F302VB  stm32f302xc   128K   32K  -
   STM32F302CC  stm32f302xc   256K   40K  -
   STM32F302RC  stm32f302xc   256K   40K  -
   STM32F302VC  stm32f302xc   256K   40K  -
@@ -106,10 +106,10 @@ set(STM32F3_MAP
   # ----------------------------------------------------------
   # STM32F373 (xC family)
   # ----------------------------------------------------------
-  STM32F373C8  stm32f373xc    64K   32K  -
-  STM32F373R8  stm32f373xc    64K   32K  -
-  STM32F373CB  stm32f373xc   128K   32K  -
-  STM32F373RB  stm32f373xc   128K   32K  -
+  STM32F373C8  stm32f373xc    64K   16K  -
+  STM32F373R8  stm32f373xc    64K   16K  -
+  STM32F373CB  stm32f373xc   128K   24K  -
+  STM32F373RB  stm32f373xc   128K   24K  -
   STM32F373CC  stm32f373xc   256K   32K  -
   STM32F373RC  stm32f373xc   256K   32K  -
 

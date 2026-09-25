@@ -17,11 +17,9 @@ set(STM32L1_MAP
   STM32L100C6  stm32l100xb    32K   4K   -
   STM32L100R6  stm32l100xb    32K   4K   -
 
-  STM32L100C8  stm32l100xb    64K   8K   -
   STM32L100R8  stm32l100xb    64K   8K   -
 
-  STM32L100CB  stm32l100xc   128K   16K  -
-  STM32L100RB  stm32l100xc   128K   16K  -
+  STM32L100RB  stm32l100xc   128K   10K  -
 
   # ----------------------------------------------------------
   # STM32L151
@@ -29,7 +27,6 @@ set(STM32L1_MAP
   # ----------------------------------------------------------
   STM32L151C6  stm32l151xb    32K   10K  -
   STM32L151R6  stm32l151xb    32K   10K  -
-  STM32L151V6  stm32l151xb    32K   10K  -
 
   STM32L151C8  stm32l151xb    64K   10K  -
   STM32L151R8  stm32l151xb    64K   10K  -
@@ -44,7 +41,6 @@ set(STM32L1_MAP
   STM32L151VC  stm32l151xd   256K   32K  -
   STM32L151ZC  stm32l151xd   256K   32K  -
 
-  STM32L151CD  stm32l151xe   384K   48K  -
   STM32L151RD  stm32l151xe   384K   48K  -
   STM32L151VD  stm32l151xe   384K   48K  -
   STM32L151ZD  stm32l151xe   384K   48K  -
@@ -55,7 +51,6 @@ set(STM32L1_MAP
   # ----------------------------------------------------------
   STM32L152C6  stm32l152xb    32K   10K  -
   STM32L152R6  stm32l152xb    32K   10K  -
-  STM32L152V6  stm32l152xb    32K   10K  -
 
   STM32L152C8  stm32l152xb    64K   10K  -
   STM32L152R8  stm32l152xb    64K   10K  -
@@ -70,7 +65,6 @@ set(STM32L1_MAP
   STM32L152VC  stm32l152xd   256K   32K  -
   STM32L152ZC  stm32l152xd   256K   32K  -
 
-  STM32L152CD  stm32l152xe   384K   48K  -
   STM32L152RD  stm32l152xe   384K   48K  -
   STM32L152VD  stm32l152xe   384K   48K  -
   STM32L152ZD  stm32l152xe   384K   48K  -

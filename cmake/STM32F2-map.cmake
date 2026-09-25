@@ -16,19 +16,19 @@ set(STM32F2_MAP
   # STM32F205 (connectivity)
   # Flash code: B=128K, C=256K, E=512K, F=768K, G=1024K
   # ----------------------------------------------------------
-  STM32F205RB  stm32f205xx   128K   128K  -
-  STM32F205RC  stm32f205xx   256K   128K  -
+  STM32F205RB  stm32f205xx   128K   64K   -
+  STM32F205RC  stm32f205xx   256K   96K   -
   STM32F205RE  stm32f205xx   512K   128K  -
   STM32F205RF  stm32f205xx   768K   128K  -
   STM32F205RG  stm32f205xx  1024K   128K  -
 
-  STM32F205VB  stm32f205xx   128K   128K  -
-  STM32F205VC  stm32f205xx   256K   128K  -
+  STM32F205VB  stm32f205xx   128K   64K   -
+  STM32F205VC  stm32f205xx   256K   96K   -
   STM32F205VE  stm32f205xx   512K   128K  -
   STM32F205VF  stm32f205xx   768K   128K  -
   STM32F205VG  stm32f205xx  1024K   128K  -
 
-  STM32F205ZC  stm32f205xx   256K   128K  -
+  STM32F205ZC  stm32f205xx   256K   96K   -
   STM32F205ZE  stm32f205xx   512K   128K  -
   STM32F205ZF  stm32f205xx   768K   128K  -
   STM32F205ZG  stm32f205xx  1024K   128K  -
@@ -75,7 +75,6 @@ set(STM32F2_MAP
   STM32F217IG  stm32f217xx  1024K   128K  -
   STM32F217ZG  stm32f217xx  1024K   128K  -
 )
-
 # ============================================================
 # LEGACY: will be removed in future releases. Use STM32F2_MAP instead.
 # STM32F2 flash sector count lookup

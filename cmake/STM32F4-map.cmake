@@ -71,9 +71,9 @@ set(STM32F4_MAP
   # STM32F411 (0 CCM)
   # Up to 512KB Flash / 128KB SRAM :contentReference[oaicite:4]{index=4}
   # ----------------------------------------------------------
-  STM32F411CC  stm32f411xc    256K  128K   0K
-  STM32F411RC  stm32f411xc    256K  128K   0K
-  STM32F411VC  stm32f411xc    256K  128K   0K
+  STM32F411CC  stm32f411xe    256K  128K   0K
+  STM32F411RC  stm32f411xe    256K  128K   0K
+  STM32F411VC  stm32f411xe    256K  128K   0K
 
   STM32F411CE  stm32f411xe    512K  128K   0K
   STM32F411RE  stm32f411xe    512K  128K   0K
@@ -97,23 +97,23 @@ set(STM32F4_MAP
   # STM32F413 / STM32F423 (64K CCM)
   # SRAM system 320 (256 + 64) → 64KB CCM :contentReference[oaicite:6]{index=6}
   # ----------------------------------------------------------
-  STM32F413CG  stm32f413xx   1024K  320K  64K
-  STM32F413RG  stm32f413xx   1024K  320K  64K
-  STM32F413MG  stm32f413xx   1024K  320K  64K
-  STM32F413VG  stm32f413xx   1024K  320K  64K
-  STM32F413ZG  stm32f413xx   1024K  320K  64K
+  STM32F413CG  stm32f413xx   1024K  320K  -
+  STM32F413RG  stm32f413xx   1024K  320K  -
+  STM32F413MG  stm32f413xx   1024K  320K  -
+  STM32F413VG  stm32f413xx   1024K  320K  -
+  STM32F413ZG  stm32f413xx   1024K  320K  -
 
-  STM32F413CH  stm32f413xx   1536K  320K  64K
-  STM32F413RH  stm32f413xx   1536K  320K  64K
-  STM32F413MH  stm32f413xx   1536K  320K  64K
-  STM32F413VH  stm32f413xx   1536K  320K  64K
-  STM32F413ZH  stm32f413xx   1536K  320K  64K
+  STM32F413CH  stm32f413xx   1536K  320K  -
+  STM32F413RH  stm32f413xx   1536K  320K  -
+  STM32F413MH  stm32f413xx   1536K  320K  -
+  STM32F413VH  stm32f413xx   1536K  320K  -
+  STM32F413ZH  stm32f413xx   1536K  320K  -
 
-  STM32F423CH  stm32f423xx   1536K  320K  64K
-  STM32F423RH  stm32f423xx   1536K  320K  64K
-  STM32F423MH  stm32f423xx   1536K  320K  64K
-  STM32F423VH  stm32f423xx   1536K  320K  64K
-  STM32F423ZH  stm32f423xx   1536K  320K  64K
+  STM32F423CH  stm32f423xx   1536K  320K  -
+  STM32F423RH  stm32f423xx   1536K  320K  -
+  STM32F423MH  stm32f423xx   1536K  320K  -
+  STM32F423VH  stm32f423xx   1536K  320K  -
+  STM32F423ZH  stm32f423xx   1536K  320K  -
 
   # ----------------------------------------------------------
   # STM32F415 (64K CCM)  — same memory class as F405/407 :contentReference[oaicite:7]{index=7}
@@ -152,11 +152,11 @@ set(STM32F4_MAP
   # STM32F429 (64K CCM)
   # Up to 256+4KB SRAM including 64KB CCM :contentReference[oaicite:10]{index=10}
   # ----------------------------------------------------------
-  STM32F429VE  stm32f429xx   1024K  256K  64K
-  STM32F429ZE  stm32f429xx   1024K  256K  64K
-  STM32F429IE  stm32f429xx   1024K  256K  64K
-  STM32F429BE  stm32f429xx   1024K  256K  64K
-  STM32F429NE  stm32f429xx   1024K  256K  64K
+  STM32F429VE  stm32f429xx   512K   256K  64K
+  STM32F429ZE  stm32f429xx   512K   256K  64K
+  STM32F429IE  stm32f429xx   512K   256K  64K
+  STM32F429BE  stm32f429xx   512K   256K  64K
+  STM32F429NE  stm32f429xx   512K   256K  64K
 
   STM32F429VG  stm32f429xx   1024K  256K  64K
   STM32F429ZG  stm32f429xx   1024K  256K  64K
@@ -259,7 +259,6 @@ set(STM32F4_MAP
   STM32F479VI  stm32f479xx   2048K  384K  64K
   STM32F479ZI  stm32f479xx   2048K  384K  64K
 )
-
 # ============================================================
 # LEGACY, will be removed in future releases
 # STM32F4 flash sector count lookup
