@@ -6,11 +6,11 @@
 
 | Путь | Автор | Лицензия |
 |---|---|---|
-| `startup_c/startup_common.c` | VarvaR | MIT (`LICENSE`) |
-| `linker/*.ld.in` | VarvaR | MIT (`LICENSE`) |
-| `cmake/*` (map-таблицы, шаблоны `.h.in`) | VarvaR | MIT (`LICENSE`) |
-| `flash_sectors.py`, `README.md` | VarvaR | MIT (`LICENSE`) |
-| `startup_c/*/vector_*.c` | VarvaR; имена обработчиков — по документации ST | MIT, с оговоркой ниже |
+| `startup_c/startup_common.c` | Vlasov Sergei (VarvaR) | MIT (`LICENSE`) |
+| `linker/*.ld.in` | Vlasov Sergei (VarvaR) | MIT (`LICENSE`) |
+| `cmake/*` (map-таблицы, шаблоны `.h.in`) | Vlasov Sergei (VarvaR) | MIT (`LICENSE`) |
+| `flash_sectors.py`, `README.md` | Vlasov Sergei (VarvaR) | MIT (`LICENSE`) |
+| `startup_c/*/vector_*.c` | Vlasov Sergei (VarvaR); имена обработчиков — по документации ST | MIT, с оговоркой ниже |
 | `Device/**` (заголовки устройств, `system_*.c/.h`) | STMicroelectronics | Apache-2.0 (`LICENSES/Apache-2.0.txt`) |
 | `SVD/**` | STMicroelectronics | Apache-2.0 (`LICENSES/Apache-2.0.txt`), см. ниже |
 
