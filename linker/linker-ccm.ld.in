@@ -16,20 +16,6 @@ MEMORY
 }
 
 /* ============================================================
- *  ELF program headers
- *  Explicit PHDRS prevents GNU ld from merging the code LOAD
- *  segment (R+X) with the .data init LOAD segment (R+W) into
- *  a single RWX segment — eliminates the binutils 2.39+ warning.
- * ============================================================ */
-PHDRS
-{
-  flash   PT_LOAD FLAGS(5);  /* PF_R(4) + PF_X(1) : code in FLASH      */
-  data    PT_LOAD FLAGS(6);  /* PF_R(4) + PF_W(2) : .data LMA in FLASH */
-  ccm     PT_LOAD FLAGS(6);  /* PF_R(4) + PF_W(2) : .ccmram LMA in FLASH */
-  ram     PT_NULL ;          /* .bss / heap / stack — not loaded        */
-}
-
-/* ============================================================
  *  Heap & stack configuration (main RAM by default)
  * ============================================================ */
 _Min_Heap_Size  = @HEAP_SIZE@;
@@ -51,7 +37,7 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector))
     . = ALIGN(4);
-  } > FLASH :flash
+  } > FLASH
 
   /* ----------------------------------------------------------
    *  Program code
@@ -70,7 +56,7 @@ SECTIONS
     KEEP(*(.fini))
 
     . = ALIGN(4);
-  } > FLASH :flash
+  } > FLASH
 
   /* ----------------------------------------------------------
    *  Read-only data
@@ -81,7 +67,7 @@ SECTIONS
     *(.rodata)
     *(.rodata*)
     . = ALIGN(4);
-  } > FLASH :flash
+  } > FLASH
 
   /* ----------------------------------------------------------
    *  ARM exception tables (C++)
@@ -91,7 +77,7 @@ SECTIONS
     . = ALIGN(4);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(4);
-  } > FLASH :flash
+  } > FLASH
 
   .ARM.exidx :
   {
@@ -100,7 +86,7 @@ SECTIONS
     *(.ARM.exidx*)
     __exidx_end = .;
     . = ALIGN(4);
-  } > FLASH :flash
+  } > FLASH
 
   /* ----------------------------------------------------------
    *  C++ ctors/dtors
@@ -112,7 +98,7 @@ SECTIONS
     KEEP(*(.preinit_array*))
     PROVIDE_HIDDEN(__preinit_array_end = .);
     . = ALIGN(4);
-  } > FLASH :flash
+  } > FLASH
 
   .init_array :
   {
@@ -122,7 +108,7 @@ SECTIONS
     KEEP(*(.init_array*))
     PROVIDE_HIDDEN(__init_array_end = .);
     . = ALIGN(4);
-  } > FLASH :flash
+  } > FLASH
 
   .fini_array :
   {
@@ -132,7 +118,7 @@ SECTIONS
     KEEP(*(.fini_array*))
     PROVIDE_HIDDEN(__fini_array_end = .);
     . = ALIGN(4);
-  } > FLASH :flash
+  } > FLASH
 
   /* End of text/rodata/ctors area */
   . = ALIGN(4);
@@ -155,7 +141,7 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;
     __data_end__ = _edata;
-  } > RAM AT > FLASH :data
+  } > RAM AT > FLASH
 
   /* Source address for data init (used by startup) */
   _sidata = LOADADDR(.data);
@@ -174,7 +160,7 @@ SECTIONS
 
     . = ALIGN(4);
     __ccmram_end__ = .;
-  } > CCMRAM AT > FLASH :ccm
+  } > CCMRAM AT > FLASH
 
   /* Source address for CCM init (you must copy it in startup if you use it) */
   _siccm = LOADADDR(.ccmram);
@@ -195,7 +181,7 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;
     __bss_end__ = _ebss;
-  } > RAM :ram
+  } > RAM
 
   /* ----------------------------------------------------------
    *  Uninitialized data in CCMRAM (explicit opt-in)
@@ -211,7 +197,7 @@ SECTIONS
 
     . = ALIGN(4);
     __ccmram_bss_end__ = .;
-  } > CCMRAM :ram
+  } > CCMRAM
 
   /* ----------------------------------------------------------
    *  Heap and stack in main RAM (safe default)
@@ -226,7 +212,7 @@ SECTIONS
     . = . + _Min_Stack_Size;
 
     . = ALIGN(8);
-  } > RAM :ram
+  } > RAM
 
   /* ----------------------------------------------------------
    *  Discard unused standard libraries
