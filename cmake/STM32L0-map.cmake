@@ -12,7 +12,7 @@ set(STM32L0_MAP
 
   # ----------------------------------------------------------
   # STM32L010 (Entry line)
-  # CMSIS: stm32l010x4 (F4,K4) | x6 (C6) | x8 (K8,R8) | xb (RB) - по перечню ST в stm32l0xx.h
+  # CMSIS: stm32l010x4 (F4,K4) | x6 (C6) | x8 (K8,R8) | xb (RB) - per ST's list in stm32l0xx.h
   # ----------------------------------------------------------
   STM32L010F4  stm32l010x4    16K   2K   -
   STM32L010K4  stm32l010x4    16K   2K   -
