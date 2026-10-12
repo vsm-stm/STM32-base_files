@@ -119,6 +119,22 @@ SECTIONS
     . = ALIGN(4);
   } > FLASH
 
+  .copy_table :
+  {
+    . = ALIGN(4);
+    __stm32_copy_table_start__ = .;
+    LONG(LOADADDR(.data)); LONG(ADDR(.data)); LONG(SIZEOF(.data));
+    __stm32_copy_table_end__ = .;
+  } > FLASH
+
+  .zero_table :
+  {
+    . = ALIGN(4);
+    __stm32_zero_table_start__ = .;
+    LONG(ADDR(.bss)); LONG(SIZEOF(.bss));
+    __stm32_zero_table_end__ = .;
+  } > FLASH
+
   /* End of text/rodata/ctors area */
   . = ALIGN(4);
   _etext = .;

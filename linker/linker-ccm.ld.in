@@ -120,6 +120,24 @@ SECTIONS
     . = ALIGN(4);
   } > FLASH
 
+  .copy_table :
+  {
+    . = ALIGN(4);
+    __stm32_copy_table_start__ = .;
+    LONG(LOADADDR(.data)); LONG(ADDR(.data)); LONG(SIZEOF(.data));
+    LONG(LOADADDR(.ccmram)); LONG(ADDR(.ccmram)); LONG(SIZEOF(.ccmram));
+    __stm32_copy_table_end__ = .;
+  } > FLASH
+
+  .zero_table :
+  {
+    . = ALIGN(4);
+    __stm32_zero_table_start__ = .;
+    LONG(ADDR(.bss)); LONG(SIZEOF(.bss));
+    LONG(ADDR(.ccmram_bss)); LONG(SIZEOF(.ccmram_bss));
+    __stm32_zero_table_end__ = .;
+  } > FLASH
+
   /* End of text/rodata/ctors area */
   . = ALIGN(4);
   _etext = .;
@@ -156,13 +174,13 @@ SECTIONS
     __ccmram_start__ = .;
 
     *(.ccmram)
-    *(.ccmram*)
+    *(.ccmram.*)
 
     . = ALIGN(4);
     __ccmram_end__ = .;
   } > CCMRAM AT > FLASH
 
-  /* Source address for CCM init (you must copy it in startup if you use it) */
+  /* Source address for the shared startup copy table. */
   _siccm = LOADADDR(.ccmram);
 
   /* ----------------------------------------------------------

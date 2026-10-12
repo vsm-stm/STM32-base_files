@@ -132,6 +132,26 @@ SECTIONS
     . = ALIGN(4);
   } > FLASH
 
+  .copy_table :
+  {
+    . = ALIGN(4);
+    __stm32_copy_table_start__ = .;
+    LONG(LOADADDR(.data)); LONG(ADDR(.data)); LONG(SIZEOF(.data));
+    LONG(LOADADDR(.itcm_text)); LONG(ADDR(.itcm_text)); LONG(SIZEOF(.itcm_text));
+    LONG(LOADADDR(.dtcm_data)); LONG(ADDR(.dtcm_data)); LONG(SIZEOF(.dtcm_data));
+    __stm32_copy_table_end__ = .;
+  } > FLASH
+
+  .zero_table :
+  {
+    . = ALIGN(4);
+    __stm32_zero_table_start__ = .;
+    LONG(ADDR(.bss)); LONG(SIZEOF(.bss));
+    LONG(ADDR(.dtcm_bss)); LONG(SIZEOF(.dtcm_bss));
+    LONG(ADDR(.sram2_bss)); LONG(SIZEOF(.sram2_bss));
+    __stm32_zero_table_end__ = .;
+  } > FLASH
+
   /* End of FLASH resident area */
   . = ALIGN(4);
   _etext = .;
@@ -139,7 +159,7 @@ SECTIONS
   /* ----------------------------------------------------------
    *  Explicit ITCM code (opt-in)
    *  Use: __attribute__((section(".itcm_text")))
-   *  Note: must be copied by startup if used.
+   *  Copied automatically by the shared startup table.
    * ---------------------------------------------------------- */
   .itcm_text :
   {
@@ -177,7 +197,7 @@ SECTIONS
   /* ----------------------------------------------------------
    *  Explicit initialized fast data in DTCM (opt-in)
    *  Use: __attribute__((section(".dtcm_data")))
-   *  Note: must be copied by startup if used.
+   *  Copied automatically by the shared startup table.
    * ---------------------------------------------------------- */
   .dtcm_data :
   {

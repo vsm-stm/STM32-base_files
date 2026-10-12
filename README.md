@@ -15,7 +15,7 @@ Data for building STM32 firmware without HAL: downloaded into a project by
 |---|---|---|
 | `Device/<series>/Include`, `Source` | CMSIS device headers and `system_*.c/.h` (ST) | the compiler |
 | `SVD/<series>/` | peripheral descriptions for the debugger (ST) | `cortex-debug` |
-| `startup_c/startup_common.c` | shared startup (Reset_Handler: .data/.bss, C++ constructors) | linking |
+| `startup_c/startup_common.c` | shared startup (copy/zero tables, VTOR/IRQ, C++ constructors) | linking |
 | `startup_c/<series>/vector_<chip>.c` | the chip's interrupt vector table | linking, driver IRQ-stub generation |
 | `linker/` | linker script templates: `simple`, `ccm`, `f7` | `stm32_add_firmware()` |
 | `cmake/STM32<F>-map.cmake` | chip table (flash/RAM/CCM), `main_cpu_PARAMS`, erase-sector lists `STM32<F>_SECTORS_<n>K` | `cmsis-download.cmake` |
@@ -47,7 +47,7 @@ the list of files without an explicit license are in `THIRD_PARTY.md`.
 |---|---|---|
 | `Device/<серия>/Include`, `Source` | CMSIS-заголовки устройств и `system_*.c/.h` (ST) | компилятор |
 | `SVD/<серия>/` | описания периферии для отладчика (ST) | `cortex-debug` |
-| `startup_c/startup_common.c` | общий стартап (Reset_Handler: .data/.bss, C++-конструкторы) | линковка |
+| `startup_c/startup_common.c` | общий стартап (copy/zero tables, VTOR/IRQ, C++-конструкторы) | линковка |
 | `startup_c/<серия>/vector_<чип>.c` | таблица векторов прерываний чипа | линковка, генерация IRQ-заглушек драйверов |
 | `linker/` | шаблоны линкер-скриптов: `simple`, `ccm`, `f7` | `stm32_add_firmware()` |
 | `cmake/STM32<F>-map.cmake` | таблица чипов (flash/RAM/CCM), `main_cpu_PARAMS`, списки секторов `STM32<F>_SECTORS_<n>K` | `cmsis-download.cmake` |
@@ -65,3 +65,24 @@ the list of files without an explicit license are in `THIRD_PARTY.md`.
 Собственные файлы репозитория — MIT (`LICENSE`). Файлы ST (`Device/`, `SVD/`)
 сохраняют лицензии STMicroelectronics (Apache-2.0). Подробности, исключения и
 список файлов без явной лицензии — в `THIRD_PARTY.md`.
+
+## Runtime/layout format 2 / Формат runtime/layout 2
+
+- Startup and all three linker templates use matching copy/zero tables with
+  byte lengths and `__stm32_` symbol names. CCM/ITCM/DTCM/SRAM2 initialize
+  automatically before constructors; .ccmram_bss is NOLOAD.
+- FPU remains disabled during pre-main constructors. No float/double there;
+  explicitly enable the FPU from main via stm32_runtime.h or System::Init().
+- Single-bank only: F72/F73 geometry is 16/64/128 KiB, other supported F7
+  layouts 32/128/256 KiB. G4 category 3 single-bank pages are 4 KiB. Actual
+  option bytes must match this mode. F4 2 MiB has no supported single-bank list.
+- Update startup/linker/maps together; run flash_sectors.py to regenerate
+  format-2 maps. Regeneration does not rewrite files whose contents match.
+- Vendor system_*.c stays in this data repository but is not downloaded or
+  linked by the platform. system_*.h is a required dependency of device headers.
+
+Общий startup обслуживает таблицы копирования и обнуления всех RAM-секций до
+конструкторов, выставляет VTOR и восстанавливает IRQ перед main. FPU включается
+только явно из main; float/double в инициализации до main запрещены.
+Dual-bank не реализован. Startup, linker и maps обновляются совместно.
+Подробности — в BASE_FIXES.md репозитория [stm32_cmake_base](https://github.com/vsm-stm/stm32_cmake_base).
