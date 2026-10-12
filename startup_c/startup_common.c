@@ -25,6 +25,10 @@ __attribute__((noreturn)) void Reset_Handler(void) {
 		for (uint32_t i = 0; i < p[1]; ++i) dst[i] = 0;
 	}
 
+#if defined(__FPU_PRESENT) && (__FPU_PRESENT == 1U) && defined(__FPU_USED) && (__FPU_USED == 1U)
+	/* Enable CP10/CP11 before constructors. */
+	SCB->CPACR |= (3UL << 20U) | (3UL << 22U);
+#endif
 #if defined(SCB_VTOR_TBLOFF_Msk)
 	SCB->VTOR = (uint32_t)(uintptr_t)vector_table;
 #elif defined(STM32_IMAGE_FLASH_ORIGIN) && (STM32_IMAGE_FLASH_ORIGIN != 0x08000000U)
@@ -34,11 +38,9 @@ __attribute__((noreturn)) void Reset_Handler(void) {
 	__set_BASEPRI(0);
 	__set_FAULTMASK(0);
 #endif
+	/* Complete RAM initialization and core configuration before constructors. */
 	__DSB();
 	__ISB();
-	/* FPU stays disabled. No FP operations in global/static constructors;
-	 * explicitly enable the FPU from main before using float/double.
-	 */
 	__libc_init_array();
 	__enable_irq();
 	main();

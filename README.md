@@ -71,8 +71,11 @@ the list of files without an explicit license are in `THIRD_PARTY.md`.
 - Startup and all three linker templates use matching copy/zero tables with
   byte lengths and `__stm32_` symbol names. CCM/ITCM/DTCM/SRAM2 initialize
   automatically before constructors; .ccmram_bss is NOLOAD.
-- FPU remains disabled during pre-main constructors. No float/double there;
-  explicitly enable the FPU from main via stm32_runtime.h or System::Init().
+- With `__FPU_PRESENT == 1` and `__FPU_USED == 1`, startup enables CP10/CP11
+  access through `SCB->CPACR` after RAM initialization. One shared `DSB`/`ISB`
+  pair follows FPU/VTOR/core mask configuration before constructors.
+  Constructors may use float/double. Devices/builds without
+  hardware FPU use omit this block.
 - Single-bank only: F72/F73 geometry is 16/64/128 KiB, other supported F7
   layouts 32/128/256 KiB. G4 category 3 single-bank pages are 4 KiB. Actual
   option bytes must match this mode. F4 2 MiB has no supported single-bank list.
@@ -82,7 +85,9 @@ the list of files without an explicit license are in `THIRD_PARTY.md`.
   linked by the platform. system_*.h is a required dependency of device headers.
 
 Общий startup обслуживает таблицы копирования и обнуления всех RAM-секций до
-конструкторов, выставляет VTOR и восстанавливает IRQ перед main. FPU включается
-только явно из main; float/double в инициализации до main запрещены.
+конструкторов, выставляет VTOR и восстанавливает IRQ перед main. При наличии
+и использовании аппаратного FPU startup включает его после инициализации RAM,
+до конструкторов. Одна общая пара DSB/ISB завершает настройку FPU, VTOR и масок
+ядра; float/double в конструкторах разрешены.
 Dual-bank не реализован. Startup, linker и maps обновляются совместно.
 Подробности — в BASE_FIXES.md репозитория [stm32_cmake_base](https://github.com/vsm-stm/stm32_cmake_base).
