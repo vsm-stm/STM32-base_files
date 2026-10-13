@@ -18,15 +18,18 @@ Data for building STM32 firmware without HAL: downloaded into a project by
 | `startup_c/startup_common.c` | shared startup (copy/zero tables, VTOR/IRQ, C++ constructors) | linking |
 | `startup_c/<series>/vector_<chip>.c` | the chip's interrupt vector table | linking, driver IRQ-stub generation |
 | `linker/` | linker script templates: `simple`, `ccm`, `f7` | `stm32_add_firmware()` |
-| `cmake/STM32<F>-map.cmake` | chip table (flash/RAM/CCM), `main_cpu_PARAMS`, erase-sector lists `STM32<F>_SECTORS_<n>K` | `cmsis-download.cmake` |
+| `cmake/STM32<F>-map.cmake` | chip table (flash/RAM/CCM/Flash layout), `main_cpu_PARAMS`, shared erase maps for each layout/density/mode | `cmsis-download.cmake` |
 | `cmake/flash_config.h.in`, `irq_registry_config.h.in` | shared templates the drivers generate their own headers from | `STM32_Drivers_CPP` |
 
 ## Maintenance
 
-`flash_sectors.py` rewrites `cmake/STM32<F>-map.cmake`: it drops the stale
-`STM32<F>_SECTOR_MAP` and appends ready-made erase-sector lists for every
-flash size. Run manually when the layout changes; idempotent. `--dry-run`
-only prints the result.
+`flash_sectors.py` rewrites `cmake/STM32<F>-map.cmake`. Each device row contains
+six fields: part name, CMSIS selector, Flash size, RAM size, extra RAM size and
+`FLASH_LAYOUT`. Devices with the same geometry share a layout. The generated
+block contains one erase list per layout/density/mode; the presence of a
+single/dual list defines the supported modes. Separate device aliases, mode
+tables, sector-count tables and duplicate address/size lists are removed.
+Run manually when the layout changes; idempotent. `--dry-run` only prints the result.
 
 ## Licenses
 
@@ -50,15 +53,19 @@ the list of files without an explicit license are in `THIRD_PARTY.md`.
 | `startup_c/startup_common.c` | общий стартап (copy/zero tables, VTOR/IRQ, C++-конструкторы) | линковка |
 | `startup_c/<серия>/vector_<чип>.c` | таблица векторов прерываний чипа | линковка, генерация IRQ-заглушек драйверов |
 | `linker/` | шаблоны линкер-скриптов: `simple`, `ccm`, `f7` | `stm32_add_firmware()` |
-| `cmake/STM32<F>-map.cmake` | таблица чипов (flash/RAM/CCM), `main_cpu_PARAMS`, списки секторов `STM32<F>_SECTORS_<n>K` | `cmsis-download.cmake` |
+| `cmake/STM32<F>-map.cmake` | таблица чипов (flash/RAM/CCM/вариант Flash), `main_cpu_PARAMS`, общие карты стирания по варианту/объёму/режиму | `cmsis-download.cmake` |
 | `cmake/flash_config.h.in`, `irq_registry_config.h.in` | общие шаблоны, из которых драйверы генерируют свои заголовки | `STM32_Drivers_CPP` |
 
 ## Обслуживание
 
-`flash_sectors.py` переписывает `cmake/STM32<F>-map.cmake`: убирает устаревшую
-`STM32<F>_SECTOR_MAP` и дописывает готовые списки секторов стирания по каждому
-объёму флеша. Запускается вручную при изменении раскладки, идемпотентен;
-`--dry-run` только печатает результат.
+`flash_sectors.py` переписывает `cmake/STM32<F>-map.cmake`. В строке устройства
+шесть полей: имя МК, CMSIS-селектор, объём Flash, объём RAM, дополнительная RAM
+и `FLASH_LAYOUT`. Устройства с одинаковой геометрией используют общий вариант.
+Генерируемый блок содержит одну карту стирания по варианту/объёму/режиму;
+наличие карты single/dual определяет допустимые режимы. Отдельные соответствия
+устройств, таблицы режимов, количества секторов и дубли адресов/размеров удаляются.
+Запускается вручную при изменении раскладки, идемпотентен; `--dry-run` только
+печатает результат.
 
 ## Лицензии
 
@@ -76,11 +83,14 @@ the list of files without an explicit license are in `THIRD_PARTY.md`.
   pair follows FPU/VTOR/core mask configuration before constructors.
   Constructors may use float/double. Devices/builds without
   hardware FPU use omit this block.
-- Single-bank only: F72/F73 geometry is 16/64/128 KiB, other supported F7
-  layouts 32/128/256 KiB. G4 category 3 single-bank pages are 4 KiB. Actual
-  option bytes must match this mode. F4 2 MiB has no supported single-bank list.
-- Update startup/linker/maps together; run flash_sectors.py to regenerate
-  format-2 maps. Regeneration does not rewrite files whose contents match.
+- The device row's FLASH_LAYOUT column selects shared format-3 records containing
+  address, size, bank and hardware erase selector. Fixed dual-bank parts use
+  dual; switchable parts default to single unless project.json selects dual.
+- F4/F7 second-bank erase selectors start at 16. G0 uses a bank-local page
+  number and BKER. G4 category-3 dual layouts preserve the address gap on
+  128/256 KiB parts. H7A3/B3 use 8 KiB pages, other mapped H7 use 128 KiB sectors.
+- Regenerate maps with flash_sectors.py. Use matching platform/driver versions
+  and flash_config.h.in; startup's existing runtime tables remain format 2.
 - Vendor system_*.c stays in this data repository but is not downloaded or
   linked by the platform. system_*.h is a required dependency of device headers.
 
@@ -89,5 +99,12 @@ the list of files without an explicit license are in `THIRD_PARTY.md`.
 и использовании аппаратного FPU startup включает его после инициализации RAM,
 до конструкторов. Одна общая пара DSB/ISB завершает настройку FPU, VTOR и масок
 ядра; float/double в конструкторах разрешены.
-Dual-bank не реализован. Startup, linker и maps обновляются совместно.
+Столбец FLASH_LAYOUT в строке МК выбирает общие карты Flash формата 3: адрес, размер,
+банк, аппаратный селектор стирания. У фиксированных dual-bank выбирается dual;
+переключаемые по умолчанию single, явный dual задаётся в project.json.
+Нумерация стирания второго банка F4/F7 начинается с 16; G0 использует локальный
+номер страницы и BKER. Разрывы G4 category 3 сохранены. H7A3/B3 используют
+страницы 8 КиБ, остальные H7 в карте — сектора 128 КиБ. Карты H7 не означают
+реализацию его платформы. Генератор, карты, flash_config-шаблон, linker и база
+обновляются совместно; существующие startup-таблицы остаются runtime формата 2.
 Подробности — в BASE_FIXES.md репозитория [stm32_cmake_base](https://github.com/vsm-stm/stm32_cmake_base).

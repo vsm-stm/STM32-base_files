@@ -4,33 +4,21 @@ flash_sectors.py — one-shot rewrite of the cmake/STM32<F>-map.cmake files so
 the flash erase-sector layout is fully explicit data, computed by nothing at
 project-configure time.
 
-For every cmake/STM32<F>-map.cmake it:
-
-  1. keeps the legacy STM32<F>_SECTOR_MAP (FLASH_KB -> COUNT lookup) for backward
-     compatibility; --drop-legacy deletes it together with its banner.
-
-  2. appends, between markers at the end of the file, one full sector list per
-     flash density found in STM32<F>_MAP - <address> <size_bytes> pairs, one
-     pair per erase sector, even for uniform-page parts (F0/G0/...) where every
-     size is equal:
-
-         # >>> flash_sectors.py: BEGIN generated
-         set(STM32F4_SECTORS_128K  0x08000000 16384 0x08004000 16384 ...)
-         set(STM32F4_SECTORS_512K  ...)
-         # <<< flash_sectors.py: END generated
-
-Device rows are not changed. Layout format 2 supplies family defaults and
-model-specific layout aliases: F72/F73 use 16/64/128K sectors; G4 category 3
-uses 4K pages in single-bank mode. Both firmware windows and drivers consume
-the same resolved list. Actual option bytes must select single-bank mode.
+The FLASH_LAYOUT column in each device row selects a shared Flash geometry.
+Missing columns are filled once from the model; existing selections are kept.
+For each layout/density/mode the generated block contains one list of erase
+records (address, size, bank, hardware number), in layout format 3. The presence
+of a single/dual list defines the supported modes. No separate device aliases,
+mode tables or duplicate address/size lists are generated.
 
 Layout model, one shape for every family:  (fixed_runs, repeat_size)
     fixed_runs   leading non-uniform sectors, as (count, size_bytes) runs
     repeat_size  the uniform sector size that fills the rest
 Uniform-page families have fixed_runs == [].
 
-Dual-bank layouts are not generated. Unsupported densities yield an empty
-list and a configuration error, rather than a fabricated erase layout.
+Fixed dual-bank devices select dual automatically. Switchable devices default
+to single; project.json may explicitly select dual. Bank address gaps are
+preserved in the records, never presented as writable Flash.
 
     flash_sectors.py                 rewrite every cmake/STM32<F>-map.cmake
     flash_sectors.py --dry-run       print the new files, write nothing
@@ -71,17 +59,17 @@ FAMILIES: dict[str, tuple[list[tuple[int, int]], object]] = {
     "C0": ([], 2 * K),
 }
 
-# F413/F423 have single-bank 1536K; F76/F77 allow single-bank 2048K.
-# F4 2048K requires two banks. Never publish a fabricated single-bank list.
-SINGLE_BANK_MAX_KB = {"F4": 1536, "F7": 2048, "H7": 1024, "G4": 512}
 F7_SMALL_MODELS = {"stm32f722xx", "stm32f723xx", "stm32f730xx", "stm32f732xx", "stm32f733xx"}
 G4_WIDE_MODELS = {"stm32g471xx", "stm32g473xx", "stm32g474xx", "stm32g483xx", "stm32g484xx"}
+F4_BANKED_MODELS = {f"stm32f{part}xx" for part in (427, 429, 437, 439, 469, 479)}
+F7_BANKED_MODELS = {f"stm32f{part}xx" for part in (765, 767, 769, 777, 779)}
+L0_BANKED_MODELS = {f"stm32l{part:03d}xx" for part in (71, 72, 73, 81, 82, 83)}
 
 BEGIN = "# >>> flash_sectors.py: BEGIN generated"
 END = "# <<< flash_sectors.py: END generated"
 
-# a device row inside set(STM32<F>_MAP ...):  NAME  cmsis  <flash>K  <ram>K  <extra>
-ROW_RE = re.compile(r"^\s*STM32\w+\s+\S+\s+(\d+)K\s+\d+\S*\s+\S+\s*$")
+# Device row: NAME cmsis <flash>K <ram>K <extra> [FLASH_LAYOUT].
+ROW_RE = re.compile(r"^\s*STM32\w+\s+\S+\s+(\d+)K\s+\d+\S*\s+\S+(?:\s+\S+)?\s*$")
 
 
 def sectors(family: str, flash_kb: int, *, small_f7: bool = False, wide_g4: bool = False) -> list[tuple[int, int]]:
@@ -125,16 +113,6 @@ def find_block(text: str, name: str) -> tuple[int, int] | None:
     return m.start(), c.end()
 
 
-def map_densities(text: str, family: str) -> list[int]:
-    """Distinct flash-KB values in STM32<F>_MAP. Rows are not modified."""
-    span = find_block(text, f"STM32{family}_MAP")
-    if span is None:
-        return []
-    block = text[span[0]:span[1]]
-    return sorted({int(m.group(1)) for line in block.splitlines()
-                   if (m := ROW_RE.match(line))})
-
-
 def drop_sector_map(text: str, family: str) -> str:
     """Remove set(STM32<F>_SECTOR_MAP ...) and the comment banner above it."""
     span = find_block(text, f"STM32{family}_SECTOR_MAP")
@@ -149,50 +127,117 @@ def drop_sector_map(text: str, family: str) -> str:
     return text[:start].rstrip("\n") + "\n" + text[span[1]:].lstrip("\n")
 
 
-def build_generated(family: str, densities: list[int]) -> str:
-    cap = SINGLE_BANK_MAX_KB.get(family)
+def layout_name(family: str, model: str, kb: int) -> str:
+    if family == "F4" and model in F4_BANKED_MODELS:
+        return "STM32F4_BANKED"
+    if family == "F7":
+        if model in F7_SMALL_MODELS:
+            return "STM32F7_SMALL"
+        if model in F7_BANKED_MODELS:
+            return "STM32F7_BANKED"
+    if family == "G4" and model in G4_WIDE_MODELS:
+        return "STM32G4_BANKED"
+    if family == "G0" and model in {"stm32g0b1xx", "stm32g0c1xx"}:
+        return "STM32G0_BANKED"
+    if family == "G0" and model == "stm32g0b0xx":
+        return "STM32G0_FIXED_DUAL"
+    if family == "H7" and model in {"stm32h7a3xx", "stm32h7b3xx", "stm32h7b0xx"}:
+        return "STM32H7_SMALL_PAGE"
+    if family == "L0" and model in L0_BANKED_MODELS and kb >= 128:
+        return "STM32L0_BANKED"
+    return f"STM32{family}"
+
+
+def bank_modes(layout: str, kb: int) -> tuple[str, ...]:
+    if layout == "STM32F4_BANKED":
+        return ("dual",) if kb == 2048 else (("single", "dual") if kb == 1024 else ("single",))
+    if layout == "STM32F7_BANKED" or layout == "STM32G4_BANKED":
+        return ("single", "dual")
+    if layout == "STM32G0_BANKED":
+        return ("dual",) if kb == 512 else (("single", "dual") if kb == 256 else ("single",))
+    if layout == "STM32G0_FIXED_DUAL":
+        return ("dual",)
+    if layout.startswith("STM32H7") and kb == 2048:
+        return ("dual",)
+    if layout == "STM32F1" and kb > 512:
+        return ("dual",)
+    if layout == "STM32L1" and kb >= 384:
+        return ("dual",)
+    if layout == "STM32L0_BANKED":
+        return ("dual",)
+    return ("single",)
+
+
+def erase_records(layout: str, kb: int, mode: str) -> list[tuple[int, int, int, int]]:
+    """Records are in address order; number is the register's erase selector."""
+    family = layout[5:7]
+    if mode == "single":
+        pairs = sectors(family, kb, small_f7=layout == "STM32F7_SMALL",
+                        wide_g4=layout == "STM32G4_BANKED")
+        if layout == "STM32H7_SMALL_PAGE":
+            pairs = [(FLASH_BASE + i * 8 * K, 8 * K) for i in range(kb // 8)]
+        return [(a, s, 1, i + (4 if family == "F4" and i >= 12 else 0))
+                for i, (a, s) in enumerate(pairs)]
+
+    bank1_kb = 512 if family == "F1" else kb // 2
+    bank2_kb = kb - bank1_kb
+    bank2_base = FLASH_BASE + (256 * K if layout == "STM32G4_BANKED" else bank1_kb * K)
+    records = []
+    for bank, base, capacity in ((1, FLASH_BASE, bank1_kb), (2, bank2_base, bank2_kb)):
+        if family in {"F4", "F7"}:
+            pairs = sectors("F4", capacity)
+        elif layout == "STM32G4_BANKED":
+            pairs = sectors("G4", capacity)
+        elif layout == "STM32H7_SMALL_PAGE":
+            pairs = [(FLASH_BASE + i * 8 * K, 8 * K) for i in range(capacity // 8)]
+        else:
+            pairs = sectors(family, capacity)
+        for number, (address, size) in enumerate(pairs):
+            hardware = number + (16 if bank == 2 and family in {"F4", "F7"} else 0)
+            records.append((base + address - FLASH_BASE, size, bank, hardware))
+    return records
+
+
+def build_generated(layouts: set[tuple[str, int]]) -> str:
     lines = [
         BEGIN,
-        "set(STM32_FLASH_LAYOUT_VERSION 2)",
-        f"# STM32{family} erase-sector maps: <address> <size> pairs, one per",
-        f"# sector. Pick STM32{family}_SECTORS_${{STM32_FLASH}} for the device.",
+        "set(STM32_FLASH_LAYOUT_VERSION 3)",
+        "# Mode-specific erase records: <address> <size> <bank> <hardware number>.",
         "# Generated by flash_sectors.py - do not edit by hand.",
     ]
-    for kb in densities:
-        if cap and kb > cap:
-            lines.append(f"# {kb}K: dual-bank required; not implemented.")
-            lines.append(f"set(STM32{family}_SECTORS_{kb}K \"\")")
-            continue
-        pairs = " ".join(f"0x{a:08X} {s}" for a, s in sectors(family, kb))
-        lines.append(f"set(STM32{family}_SECTORS_{kb}K  {pairs})")
-    if family == "F7":
-        for model in sorted(F7_SMALL_MODELS):
-            lines.append(f"set(STM32F7_LAYOUT_{model} STM32F7_SMALL)")
-        for kb in densities:
-            if kb > 512:
-                continue
-            pairs = " ".join(f"0x{a:08X} {s}" for a, s in sectors("F7", kb, small_f7=True))
-            lines.append(f"set(STM32F7_SMALL_SECTORS_{kb}K  {pairs})")
-    if family == "G4":
-        for model in sorted(G4_WIDE_MODELS):
-            lines.append(f"set(STM32G4_LAYOUT_{model} STM32G4_WIDE)")
-        for kb in densities:
-            if kb < 128:
-                continue
-            pairs = " ".join(f"0x{a:08X} {s}" for a, s in sectors("G4", kb, wide_g4=True))
-            lines.append(f"set(STM32G4_WIDE_SECTORS_{kb}K  {pairs})")
+    for layout, kb in sorted(layouts):
+        modes = bank_modes(layout, kb)
+        for mode in modes:
+            records = " ".join(f"0x{a:08X} {s} {bank} {number}"
+                               for a, s, bank, number in erase_records(layout, kb, mode))
+            lines.append(f"set({layout}_ERASE_{mode}_{kb}K {records})")
     lines.append(END)
     return "\n".join(lines) + "\n"
 
 
-def rewrite(mapfile: Path, family: str, drop_legacy: bool = False) -> str | None:
+def rewrite(mapfile: Path, family: str) -> str | None:
     text = mapfile.read_text(encoding="utf-8")
-    densities = map_densities(text, family)
-    if not densities:
+    text = drop_sector_map(text, family)
+    span = find_block(text, f"STM32{family}_MAP")
+    if span is None:
         return None
-    if drop_legacy:
-        text = drop_sector_map(text, family)
-    gen = build_generated(family, densities)
+    rows = text[span[0]:span[1]].splitlines()
+    layouts = set()
+    for index, row in enumerate(rows):
+        if not ROW_RE.match(row):
+            continue
+        fields = row.split()
+        kb = int(fields[2][:-1])
+        layout = fields[5] if len(fields) == 6 else layout_name(family, fields[1], kb)
+        if len(fields) == 5:
+            rows[index] = row.rstrip() + "  " + layout
+        layouts.add((layout, kb))
+    if not layouts:
+        return None
+    text = text[:span[0]] + "\n".join(rows) + text[span[1]:]
+    text = re.sub(r"^(# STM32_FULL_NAME[^\n]*?)(?:\s+FLASH_LAYOUT)?$",
+                  r"\1  FLASH_LAYOUT", text, flags=re.MULTILINE)
+    gen = build_generated(layouts)
     if BEGIN in text and END in text:
         text = re.sub(re.escape(BEGIN) + r".*?" + re.escape(END) + r"\n?",
                       gen, text, flags=re.DOTALL)
@@ -227,8 +272,6 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--verify", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--drop-legacy", action="store_true",
-                    help="удалить устаревшие STM32<F>_SECTOR_MAP (по умолчанию остаются)")
     ap.add_argument("--cmake-dir", type=Path)
     args = ap.parse_args()
 
@@ -247,7 +290,7 @@ def main() -> int:
         if not mapfile.is_file():
             print(f"  skip STM32{fam}: no map file")
             continue
-        new = rewrite(mapfile, fam, args.drop_legacy)
+        new = rewrite(mapfile, fam)
         if new is None:
             print(f"  skip STM32{fam}: no STM32{fam}_MAP rows")
             continue

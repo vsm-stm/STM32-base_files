@@ -11,6 +11,7 @@ ENTRY(Reset_Handler)
 MEMORY
 {
   FLASH  (rx)  : ORIGIN = @FLASH_ORIGIN@,  LENGTH = @FLASH_LENGTH@
+@FLASH_BANK2_MEMORY@
   RAM    (xrw) : ORIGIN = @RAM_ORIGIN@,    LENGTH = @RAM_LENGTH@
   CCMRAM (xrw) : ORIGIN = @CCM_ORIGIN@,    LENGTH = @CCM_LENGTH@
 }
@@ -241,6 +242,8 @@ SECTIONS
     libm.a ( * )
     libgcc.a ( * )
   }
+
+@FLASH_BANK2_SECTION@
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
