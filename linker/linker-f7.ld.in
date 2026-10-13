@@ -25,6 +25,7 @@ MEMORY
   /* System SRAM split */
   SRAM1 (xrw) : ORIGIN = @SRAM1_ORIGIN@,  LENGTH = @SRAM1_LENGTH@
   SRAM2 (xrw) : ORIGIN = @SRAM2_ORIGIN@,  LENGTH = @SRAM2_LENGTH@   /* typically 0x4000 */
+@DMA_MEMORY_REGIONS@
 }
 
 /* ============================================================
@@ -149,7 +150,17 @@ SECTIONS
     LONG(ADDR(.bss)); LONG(SIZEOF(.bss));
     LONG(ADDR(.dtcm_bss)); LONG(SIZEOF(.dtcm_bss));
     LONG(ADDR(.sram2_bss)); LONG(SIZEOF(.sram2_bss));
+@DMA_ZERO_TABLE@
     __stm32_zero_table_end__ = .;
+  } > FLASH
+
+  /* MPU records consumed by System::Init(): number, base, size. */
+  .dma_regions :
+  {
+    . = ALIGN(4);
+    __stm32_dma_regions_start__ = .;
+@DMA_MPU_TABLE@
+    __stm32_dma_regions_end__ = .;
   } > FLASH
 
   /* End of FLASH resident area */
@@ -211,6 +222,16 @@ SECTIONS
     __dtcm_data_end__ = .;
   } > DTCM AT > FLASH
   _sidtcm = LOADADDR(.dtcm_data);
+
+  /* Explicit zero-initialized DMA buffers; ordinary SRAM is reduced by CMake. */
+@DMA_BUFFER_SECTIONS@
+
+  /* Catch misspelled or unconfigured DMA area names. */
+  .dma_unconfigured (NOLOAD) :
+  {
+    *(.dma .dma.*)
+  } > SRAM1
+  ASSERT(SIZEOF(.dma_unconfigured) == 0, "DMA buffer needs a configured dma_regions entry")
 
   /* ----------------------------------------------------------
    *  Uninitialized data in SRAM1
