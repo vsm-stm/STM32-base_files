@@ -148,6 +148,8 @@ def layout_name(family: str, model: str, kb: int) -> str:
     return f"STM32{family}"
 
 
+# Return supported modes only. A fixed dual layout has no synthetic single mode;
+# switchable layouts emit both lists and let the base choose the requested/default.
 def bank_modes(layout: str, kb: int) -> tuple[str, ...]:
     if layout == "STM32F4_BANKED":
         return ("dual",) if kb == 2048 else (("single", "dual") if kb == 1024 else ("single",))
@@ -168,6 +170,9 @@ def bank_modes(layout: str, kb: int) -> tuple[str, ...]:
     return ("single",)
 
 
+# Physical bank numbering and register selector are retained independently of the
+# array index. G4 bank 2 starts at its hardware window even when bank 1 is smaller,
+# preserving the unmapped gap instead of inventing writable addresses.
 def erase_records(layout: str, kb: int, mode: str) -> list[tuple[int, int, int, int]]:
     """Records are in address order; number is the register's erase selector."""
     family = layout[5:7]
@@ -215,6 +220,9 @@ def build_generated(layouts: set[tuple[str, int]]) -> str:
     return "\n".join(lines) + "\n"
 
 
+# Preserve an existing row's explicit FLASH_LAYOUT and rebuild only the generated
+# erase-record block. The row and generated lists are the sole lookup inputs;
+# do not restore separate per-model alias/mode tables.
 def rewrite(mapfile: Path, family: str) -> str | None:
     text = mapfile.read_text(encoding="utf-8")
     text = drop_sector_map(text, family)
@@ -246,6 +254,8 @@ def rewrite(mapfile: Path, family: str) -> str | None:
     return text
 
 
+# Legacy comparison tool: only compares old per-device templates that still exist.
+# With no such templates it does not validate the current generated map corpus.
 def verify(cmake_dir: Path) -> int:
     rx = re.compile(r"\{\s*0x([0-9A-Fa-f]+)UL\s*,\s*(\d+)UL\s*\}")
     bad = 0

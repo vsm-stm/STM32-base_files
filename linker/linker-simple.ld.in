@@ -1,8 +1,16 @@
 /* ============================================================
  *  Safe generic STM32 linker script (FLASH + RAM)
- *  Compatible with STM32CubeMX / CMSIS startup code
+ *  Paired with startup_c/startup_common.c and its linker copy/zero tables
  * ============================================================ */
 
+/* Runtime contract with startup_common.c:
+ * copy-table records = source/destination/byte count; zero-table records =
+ * destination/byte count. Byte counts need not be multiples of four.
+ * CMake substitutes the selected image Flash window and heap/stack sizes.
+ * _estack and _end are also the bounds consumed by the newlib _sbrk hook.
+ * Initialized .data is copied from Flash; .bss is zeroed. This template describes
+ * one ordinary RAM region; it does not create F7 DMA/MPU sections.
+ */
 ENTRY(Reset_Handler)
 
 /* ============================================================

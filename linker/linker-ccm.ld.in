@@ -1,8 +1,17 @@
 /* ============================================================
  *  Safe STM32 linker script with CCMRAM (FLASH + RAM + CCMRAM)
- *  Compatible with STM32CubeMX / CMSIS startup code
+ *  Paired with startup_c/startup_common.c and its linker copy/zero tables
  * ============================================================ */
 
+/* Runtime contract with startup_common.c:
+ * copy-table records = source/destination/byte count; zero-table records =
+ * destination/byte count. Byte counts need not be multiples of four.
+ * CMake substitutes the selected image Flash window and heap/stack sizes.
+ * _estack and _end are also the bounds consumed by the newlib _sbrk hook.
+ * .ccmram initialized data is copied; .ccmram_bss is zeroed separately.
+ * CCM is not ordinary peripheral-DMA RAM; place buffers in accessible SRAM.
+ * For gapped G4 Flash, .flash_bank2 is explicit and ordinary code stays in bank 1.
+ */
 ENTRY(Reset_Handler)
 
 /* ============================================================

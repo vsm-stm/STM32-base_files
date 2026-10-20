@@ -1,3 +1,10 @@
+# Flash geometry contract (format 3):
+# Row FLASH_LAYOUT selects <layout>_ERASE_<single|dual>_<density>K.
+# Each erase record is address/byte-size/bank/hardware-selector; K means 1024 bytes.
+# List presence defines supported modes: fixed dual is automatic, switchable defaults single.
+# Edit model/layout input and flash_sectors.py for geometry changes; no per-model alias table.
+# H7 geometry data does not provide the separate, currently unsupported H7 runtime/linker port.
+
 # ============================================================
 # STM32H7 full MCU map (ST.com verified)
 # STM32_FULL_NAME  NAME            FLASH_KB  RAM_KB  DTCM_KB  FLASH_LAYOUT

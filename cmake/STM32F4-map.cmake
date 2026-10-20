@@ -1,3 +1,9 @@
+# Flash geometry contract (format 3):
+# Row FLASH_LAYOUT selects <layout>_ERASE_<single|dual>_<density>K.
+# Each erase record is address/byte-size/bank/hardware-selector; K means 1024 bytes.
+# List presence defines supported modes: fixed dual is automatic, switchable defaults single.
+# Edit model/layout input and flash_sectors.py for geometry changes; no per-model alias table.
+
 # ============================================================
 # STM32F4 full MCU map (ST.com / datasheets)
 # STM32_FULL_NAME  NAME         FLASH_KB  RAM_KB  CCMRAM_KB  FLASH_LAYOUT
@@ -14,7 +20,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F401 (0 CCM)
-  # Up to 256KB Flash / 64KB SRAM (no CCM) :contentReference[oaicite:0]{index=0}
+  # Up to 256KB Flash / 64KB SRAM (no CCM)
   # ----------------------------------------------------------
   STM32F401CB  stm32f401xc    128K   64K   0K  STM32F4
   STM32F401RB  stm32f401xc    128K   64K   0K  STM32F4
@@ -34,7 +40,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F405 (64K CCM)
-  # Up to 192+4KB SRAM including 64KB CCM :contentReference[oaicite:1]{index=1}
+  # Up to 192+4KB SRAM including 64KB CCM
   # ----------------------------------------------------------
   STM32F405OE  stm32f405xx    512K  192K  64K  STM32F4
 
@@ -45,7 +51,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F407 (64K CCM)
-  # Up to 192+4KB SRAM including 64KB CCM :contentReference[oaicite:2]{index=2}
+  # Up to 192+4KB SRAM including 64KB CCM
   # ----------------------------------------------------------
   STM32F407VE  stm32f407xx    512K  192K  64K  STM32F4
   STM32F407ZE  stm32f407xx    512K  192K  64K  STM32F4
@@ -57,7 +63,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F410 (0 CCM)
-  # STM32F410x8/xB: up to 128KB Flash / 32KB RAM :contentReference[oaicite:3]{index=3}
+  # STM32F410x8/xB: up to 128KB Flash / 32KB RAM
   # ----------------------------------------------------------
   STM32F410C8  stm32f410cx     64K   32K   0K  STM32F4
   STM32F410R8  stm32f410rx     64K   32K   0K  STM32F4
@@ -69,7 +75,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F411 (0 CCM)
-  # Up to 512KB Flash / 128KB SRAM :contentReference[oaicite:4]{index=4}
+  # Up to 512KB Flash / 128KB SRAM
   # ----------------------------------------------------------
   STM32F411CC  stm32f411xe    256K  128K   0K  STM32F4
   STM32F411RC  stm32f411xe    256K  128K   0K  STM32F4
@@ -81,7 +87,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F412 (0 CCM)
-  # Up to 1MB Flash / 256KB SRAM :contentReference[oaicite:5]{index=5}
+  # Up to 1MB Flash / 256KB SRAM
   # ----------------------------------------------------------
   STM32F412CE  stm32f412cx    512K  256K   0K  STM32F4
   STM32F412RE  stm32f412rx    512K  256K   0K  STM32F4
@@ -95,7 +101,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F413 / STM32F423 (64K CCM)
-  # SRAM system 320 (256 + 64) → 64KB CCM :contentReference[oaicite:6]{index=6}
+  # SRAM system 320 (256 + 64) → 64KB CCM
   # ----------------------------------------------------------
   STM32F413CG  stm32f413xx   1024K  320K  -  STM32F4
   STM32F413RG  stm32f413xx   1024K  320K  -  STM32F4
@@ -116,7 +122,7 @@ set(STM32F4_MAP
   STM32F423ZH  stm32f423xx   1536K  320K  -  STM32F4
 
   # ----------------------------------------------------------
-  # STM32F415 (64K CCM)  — same memory class as F405/407 :contentReference[oaicite:7]{index=7}
+  # STM32F415 (64K CCM)  — same memory class as F405/407
   # ----------------------------------------------------------
   STM32F415RG  stm32f415xx   1024K  192K  64K  STM32F4
   STM32F415OG  stm32f415xx   1024K  192K  64K  STM32F4
@@ -124,7 +130,7 @@ set(STM32F4_MAP
   STM32F415ZG  stm32f415xx   1024K  192K  64K  STM32F4
 
   # ----------------------------------------------------------
-  # STM32F417 (64K CCM)  — same memory class as F405/407 :contentReference[oaicite:8]{index=8}
+  # STM32F417 (64K CCM)  — same memory class as F405/407
   # ----------------------------------------------------------
   STM32F417VE  stm32f417xx    512K  192K  64K  STM32F4
   STM32F417ZE  stm32f417xx    512K  192K  64K  STM32F4
@@ -136,7 +142,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F427 (64K CCM)
-  # Up to 256+4KB SRAM including 64KB CCM :contentReference[oaicite:9]{index=9}
+  # Up to 256+4KB SRAM including 64KB CCM
   # ----------------------------------------------------------
   STM32F427VG  stm32f427xx   1024K  256K  64K  STM32F4_BANKED
   STM32F427ZG  stm32f427xx   1024K  256K  64K  STM32F4_BANKED
@@ -150,7 +156,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F429 (64K CCM)
-  # Up to 256+4KB SRAM including 64KB CCM :contentReference[oaicite:10]{index=10}
+  # Up to 256+4KB SRAM including 64KB CCM
   # ----------------------------------------------------------
   STM32F429VE  stm32f429xx   512K   256K  64K  STM32F4_BANKED
   STM32F429ZE  stm32f429xx   512K   256K  64K  STM32F4_BANKED
@@ -173,7 +179,7 @@ set(STM32F4_MAP
   STM32F429NI  stm32f429xx   2048K  256K  64K  STM32F4_BANKED
 
   # ----------------------------------------------------------
-  # STM32F437 (64K CCM) — same memory class as F427/F429 :contentReference[oaicite:11]{index=11}
+  # STM32F437 (64K CCM) — same memory class as F427/F429
   # ----------------------------------------------------------
   STM32F437VG  stm32f437xx   1024K  256K  64K  STM32F4_BANKED
   STM32F437ZG  stm32f437xx   1024K  256K  64K  STM32F4_BANKED
@@ -185,7 +191,7 @@ set(STM32F4_MAP
   STM32F437II  stm32f437xx   2048K  256K  64K  STM32F4_BANKED
 
   # ----------------------------------------------------------
-  # STM32F439 (64K CCM) — same memory class as F427/F429 :contentReference[oaicite:12]{index=12}
+  # STM32F439 (64K CCM) — same memory class as F427/F429
   # ----------------------------------------------------------
   STM32F439VG  stm32f439xx   1024K  256K  64K  STM32F4_BANKED
   STM32F439ZG  stm32f439xx   1024K  256K  64K  STM32F4_BANKED
@@ -202,7 +208,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F446 (0 CCM)
-  # Up to 512KB Flash / 128+4KB RAM (no CCM) :contentReference[oaicite:13]{index=13}
+  # Up to 512KB Flash / 128+4KB RAM (no CCM)
   # ----------------------------------------------------------
   STM32F446RC  stm32f446xx    256K  128K   0K  STM32F4
   STM32F446MC  stm32f446xx    256K  128K   0K  STM32F4
@@ -216,7 +222,7 @@ set(STM32F4_MAP
 
   # ----------------------------------------------------------
   # STM32F469 (64K CCM)
-  # Up to 384+4KB SRAM including 64KB CCM :contentReference[oaicite:14]{index=14}
+  # Up to 384+4KB SRAM including 64KB CCM
   # ----------------------------------------------------------
   STM32F469AE  stm32f469xx    512K  384K  64K  STM32F4_BANKED
   STM32F469AG  stm32f469xx   1024K  384K  64K  STM32F4_BANKED
@@ -243,7 +249,7 @@ set(STM32F4_MAP
   STM32F469ZI  stm32f469xx   2048K  384K  64K  STM32F4_BANKED
 
   # ----------------------------------------------------------
-  # STM32F479 (64K CCM) — same memory class as F469 :contentReference[oaicite:15]{index=15}
+  # STM32F479 (64K CCM) — same memory class as F469
   # ----------------------------------------------------------
   STM32F479AG  stm32f479xx   1024K  384K  64K  STM32F4_BANKED
   STM32F479BG  stm32f479xx   1024K  384K  64K  STM32F4_BANKED

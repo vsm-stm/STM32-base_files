@@ -1,3 +1,18 @@
+/**
+ * @file startup_common.c
+ * @brief Shared reset runtime driven by linker copy/zero tables.
+ *
+ * With IRQs masked: copy initialized RAM sections byte-for-byte, zero BSS and
+ * project DMA buffers, grant FPU CP10/11 when present/used, install VTOR when
+ * supported, clear applicable core masks, then execute C/C++ init arrays.
+ * Shared DSB/ISB complete RAM/core setup before constructors; no duplicate FPU
+ * barriers are needed. Finally enable IRQs and call main; returning main spins.
+ *
+ * Does not call CMSIS SystemInit/system_stm32*. Peripheral clocks and F7 DMA MPU
+ * attributes belong to System::Init in main (or to the plain-CMSIS application).
+ * Constructors must not depend on those later peripheral/cache configurations.
+ * An image relocated without VTOR requires a board-specific vector remap startup.
+ */
 #include <stdint.h>
 #include STM32_DEVICE_HEADER
 

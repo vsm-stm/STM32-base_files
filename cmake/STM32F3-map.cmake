@@ -1,3 +1,9 @@
+# Flash geometry contract (format 3):
+# Row FLASH_LAYOUT selects <layout>_ERASE_<single|dual>_<density>K.
+# Each erase record is address/byte-size/bank/hardware-selector; K means 1024 bytes.
+# List presence defines supported modes: fixed dual is automatic, switchable defaults single.
+# Edit model/layout input and flash_sectors.py for geometry changes; no per-model alias table.
+
 # ============================================================
 # STM32F3 full MCU map (aligned to *existing* vector_table + headers)
 # Available variants (per your repo): 301x8, 302x8/xc/xe, 303x8/xc/xe,

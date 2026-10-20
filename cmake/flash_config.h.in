@@ -3,8 +3,13 @@
 //
 // The base resolves model, density and bank mode into STM32_FLASH_ERASE_UNITS.
 // The driver consumes that exact geometry, including each hardware selector.
+// Configure the project/map inputs, not the generated header. Format changes
+// require matching template and Flash driver versions. erase_sector() accepts a
+// logical index; FlashSector::number is the hardware selector and may differ.
+// Bank addresses describe normal mapping; the F4/F7/G0 driver rejects active swap.
 #pragma once
 #define STM32_FLASH_CONFIG_FORMAT @FLASH_CFG_FORMAT@
+#define STM32_FLASH_UNIFORM_PAGES @FLASH_CFG_UNIFORM@
 
 #include <cstdint>
 
@@ -19,5 +24,32 @@ inline constexpr uint32_t FLASH_SECTOR_COUNT = @FLASH_CFG_COUNT@U;
 inline constexpr bool     FLASH_DUAL_BANK    = @FLASH_CFG_DUAL_BANK@;
 inline constexpr bool     FLASH_BANK_SWITCHABLE = @FLASH_CFG_BANK_SWITCHABLE@;
 
+#if !STM32_FLASH_UNIFORM_PAGES
+// Only irregular sector maps need one stored row per erase unit.
 inline constexpr FlashSector flash_sectors[FLASH_SECTOR_COUNT] = {
 @FLASH_CFG_SECTORS_LIST@};
+#endif
+
+/**
+ * Geometry of logical erase unit index, in increasing address order.
+ * Caller ensures index < FLASH_SECTOR_COUNT. No bounds check or table search.
+ * Uniform pages are calculated from bank constants; gaps between banks remain.
+ * The selected map supplies each bank's first hardware selector independently.
+ */
+inline constexpr FlashSector GetFlashSector(uint32_t index)
+{
+#if STM32_FLASH_UNIFORM_PAGES
+    constexpr uint32_t page_size = @FLASH_CFG_PAGE_SIZE@U;
+    if constexpr (FLASH_DUAL_BANK) {
+        if (index >= @FLASH_CFG_BANK1_COUNT@U) {
+            index -= @FLASH_CFG_BANK1_COUNT@U;
+            return { @FLASH_CFG_BANK2_ORIGIN@UL + index * page_size, page_size, 2U,
+                static_cast<uint16_t>(@FLASH_CFG_BANK2_NUMBER@U + index) };
+        }
+    }
+    return { @FLASH_CFG_BANK1_ORIGIN@UL + index * page_size, page_size, 1U,
+        static_cast<uint16_t>(@FLASH_CFG_BANK1_NUMBER@U + index) };
+#else
+    return flash_sectors[index];
+#endif
+}

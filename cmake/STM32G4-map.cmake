@@ -1,3 +1,10 @@
+# Flash geometry contract (format 3):
+# Row FLASH_LAYOUT selects <layout>_ERASE_<single|dual>_<density>K.
+# Each erase record is address/byte-size/bank/hardware-selector; K means 1024 bytes.
+# List presence defines supported modes: fixed dual is automatic, switchable defaults single.
+# Edit model/layout input and flash_sectors.py for geometry changes; no per-model alias table.
+# A dual-bank address gap is preserved; main FLASH stays contiguous in bank 1, bank 2 is explicit.
+
 # ============================================================
 # STM32G4 full MCU map (st.com product list + datasheets)
 # STM32_FULL_NAME  NAME         FLASH_KB  RAM_KB  CCMRAM_KB  FLASH_LAYOUT

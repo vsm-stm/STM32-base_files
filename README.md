@@ -31,6 +31,13 @@ single/dual list defines the supported modes. Separate device aliases, mode
 tables, sector-count tables and duplicate address/size lists are removed.
 Run manually when the layout changes; idempotent. `--dry-run` only prints the result.
 
+The shared flash_config.h.in template is now config format 4. Drivers generate
+GetFlashSector(index) from the selected format 3 erase map. Uniform pages use
+per-bank constants and arithmetic, retaining gaps and hardware selectors;
+irregular sectors keep a table. Detection depends on geometry, not family names.
+Update this template and STM32_Drivers_CPP together and refresh cached templates
+before reconfiguration. The platform maps, linker and project.json do not change.
+
 ## Licenses
 
 The repository's own files are MIT (`LICENSE`). ST's files (`Device/`, `SVD/`)
@@ -66,6 +73,14 @@ the list of files without an explicit license are in `THIRD_PARTY.md`.
 устройств, таблицы режимов, количества секторов и дубли адресов/размеров удаляются.
 Запускается вручную при изменении раскладки, идемпотентен; `--dry-run` только
 печатает результат.
+
+Общий шаблон flash_config.h.in использует формат конфигурации 4. Драйверы
+генерируют GetFlashSector(index) из выбранной карты стирания формата 3.
+Для равномерных страниц используются константы банков и вычисления, с сохранением
+разрывов и аппаратных номеров; для неравномерных секторов — таблица.
+Определение идёт по геометрии, без отдельного списка семейств. Шаблон и
+STM32_Drivers_CPP обновляются совместно; кешированный шаблон нужно обновить
+перед конфигурацией. Карты платформы, линкер и project.json не меняются.
 
 ## Лицензии
 

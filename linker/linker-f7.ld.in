@@ -4,9 +4,20 @@
  *  - DTCM: from map (@DTCM_LENGTH@)
  *  - SRAM2: fixed 16KB (0x4000) or override via @SRAM2_LENGTH@
  *  - SRAM1: computed by CMake (@SRAM1_ORIGIN@/@SRAM1_LENGTH@)
- *  Compatible with STM32CubeMX / CMSIS startup code
+ *  Paired with startup_c/startup_common.c and its linker copy/zero tables
  * ============================================================ */
 
+/* Runtime contract with startup_common.c:
+ * copy-table records = source/destination/byte count; zero-table records =
+ * destination/byte count. Byte counts need not be multiples of four.
+ * CMake substitutes the selected image Flash window and heap/stack sizes.
+ * _estack and _end are also the bounds consumed by the newlib _sbrk hook.
+ * F7: .itcm_text/.dtcm_data are copied; .dtcm_bss/.sram2_bss are zeroed.
+ * Project DMA regions reserve aligned SRAM1/SRAM2 tails, excluding ordinary RAM.
+ * .dma.<name> is NOLOAD with startup zero records; nonzero initializers unsupported.
+ * MPU triples are separate from zero-table pairs and applied by System::Init.
+ * Example: __attribute__((section(".dma.uart_rx"), aligned(32))) uint8_t rx[64];
+ */
 ENTRY(Reset_Handler)
 
 /* ============================================================

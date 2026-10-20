@@ -5,6 +5,11 @@
  * IRQ_TABLE_SIZE : number of peripheral IRQ slots (= total vectors - 16 Cortex-M exceptions)
  * Handler capacity comes from the common irq_registry_settings.hpp header.
  */
+/* Included by the single irq_registry.cpp translation unit: it defines storage
+ * and generated ISR bodies, not just declarations. All consumers include the
+ * shared irq_registry.hpp/settings header instead. No per-project capacity is
+ * configured here or through CMakeLists.txt.
+ */
 #define IRQ_TABLE_SIZE @IRQ_TABLE_SIZE@
 
 #include "irq_registry.hpp"
